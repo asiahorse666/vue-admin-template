@@ -1,6 +1,8 @@
 
 import chapterApi from './chapterApi'
 import sectionApi from './sectionApi'
+import course from '../course/course'
+import videoApi from '../videoApi'
 
 export default {
     data() {
@@ -16,14 +18,17 @@ export default {
                 chapterId: "",
                 title: "",
                 sort: 0,
-                isFree: false
+                isFree: false,
+                videoSourceId:"",
+                videoOriginalName: ""
             },
             // chapter弹框状态
             chapterFormVisible: false,
             // section弹框状态
             sectionFormVisible: false,
             saveChapterBtnDisabled: false,
-            saveSectionBtnDisabled: false
+            saveSectionBtnDisabled: false,
+            fileList:[],
         }
 
     },
@@ -34,6 +39,7 @@ export default {
                 this.chapterSectionList = response.data.chapterSections;
             })
         },
+        /****************************** chapter ***********************************/
         // chapter弹框的显示
         showChapterModal(chapterId) {
             this.chapterFormVisible = true
@@ -122,18 +128,31 @@ export default {
                     chapterId: "",
                     title: "",
                     sort: 0,
-                    isFree: false
+                    isFree: false,
+                    videoSourceId:"",
+                    videoOriginalName: ""
                 }
+                this.fileList=[]
             }
             this.sectionParam.chapterId = chapterId
         },
+
         // 根据id查询section
         getSectionById(sectionId) {
             sectionApi.getSectionById(sectionId).then(response => {
                 this.sectionParam = response.data.section;
+                if(this.sectionParam.videoSourceId) {
+                    this.fileList = [{
+                        name:  this.sectionParam.videoOriginalName
+                    }]
+                }else {
+                    this.fileList =[]
+                }
+
             })
         },
-        // 添加
+
+        // 添加chapter提交
         saveSection() {
             sectionApi.saveSection(this.sectionParam).then(response => {
                 if (response.success) {
@@ -145,6 +164,7 @@ export default {
                 }
             })
         },
+
         // 修改chapter提交
         updateSection() {
             this.sectionParam.gmtCreate = ''
@@ -164,10 +184,8 @@ export default {
         saveOrUpdateSection() {
             if(this.sectionParam.id) {
                 this.updateSection()
-                console.log(111)
             }else {
                 this.saveSection()
-                console.log(222)
             }
         },
 
@@ -188,6 +206,36 @@ export default {
                 })
             }).catch(() => {})
         },
+
+        /****************************** section视频的操作 ***********************************/
+        //文件上传成功之后回调
+        uploadVideoSuccess(response, file) {
+            this.sectionParam.videoSourceId = response.data.videoId
+            this.sectionParam.videoOriginalName = file.name
+        },
+
+        //文件列表移除文件时的
+        handleRemove(file, fileList) {
+            videoApi.deleteVideoByIds(this.sectionParam.videoSourceId).then(response => {
+                if(response.success) {
+                    this.$message.success("删除视频成功")
+                    this.sectionParam.videoSourceId = ""
+                    this.sectionParam.videoOriginalName = ""
+
+                }else {
+                    this.$message.error("删除视频失败")
+                }
+            })
+        },
+        //删除文件之前
+        beforeRemove(file, fileList){
+            return this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+        },
+
     },
     created() {
         this.getChapterSection();

@@ -75,6 +75,28 @@
                     </el-radio-group>
                 </el-form-item>
                 <!-- 上传视频 -->
+                <el-form-item label="上传视频">
+                    <el-upload
+                        class="upload-demo"
+                        action="http://localhost:8020/video/uploadAliyunVideo"
+                        :on-success="uploadVideoSuccess"
+                        :on-remove="handleRemove"
+                        :before-remove="beforeRemove"
+                        multiple
+                        :file-list="fileList" >
+                        <el-button size="small" type="primary">上传视频</el-button>
+                        <el-tooltip placement="right-end">
+                            <div slot="content">
+                                最大支持1G，
+                                <br>支持3GP、ASF、AVI、DAT、DV、FLV、F4V、
+                                <br>GIF、M2T、M4V、MJ2、MJPEG、MKV、MOV、MP4、
+                                <br>MPE、MPG、MPEG、MTS、OGG、QT、RM、RMVB、
+                                <br>SWF、TS、VOB、WMV、WEBM 等视频格式上传
+                            </div>
+                            <i class="el-icon-question"/>
+                        </el-tooltip>
+                    </el-upload>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="sectionFormVisible = false">取 消</el-button>
